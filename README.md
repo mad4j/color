@@ -1,2 +1,2 @@
-# color
+# colore
 Rust CLI color-space browser
