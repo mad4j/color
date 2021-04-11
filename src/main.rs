@@ -11,7 +11,7 @@ use crate::color_names::COLOR_NAMES;
 use structopt::StructOpt;
 
 #[derive(StructOpt)]
-#[structopt(name = "colore", about = "CLI color-space browser")]
+#[structopt(name = "colore", about = "CLI color-universe browser")]
 enum Commands {
     /// Manages color objects
     Color {
@@ -36,8 +36,8 @@ enum ColorCommands {
 
     /// Prints detailed color information
     Info {
-        #[structopt(long, number_of_values = 3)]
-        rgb: Vec<u8>,
+        #[structopt(flatten)]
+        color: ColorSelector
     },
 }
 
@@ -48,13 +48,16 @@ enum ListCommands {
 }
 
 #[derive(StructOpt)]
-enum ColorSelector {
+struct ColorSelector {
     
-    RGB {
-        #[structopt(long, number_of_values = 3)] 
-        rgb: Vec<u8>
-    },
-    NAME(String)
+    #[structopt(long, number_of_values = 3, conflicts_with = "name, hsv")]
+    rgb: Option<Vec<u8>>,
+
+    #[structopt(long, number_of_values = 3, conflicts_with = "name, rgb")]
+    hsv: Option<Vec<u16>>,
+
+    #[structopt(long, short, conflicts_with = "rgb, hsv")]
+    name: Option<String>,
 }
 
 fn main() {
@@ -71,9 +74,19 @@ fn main() {
                     }
                 }
             }
-            ColorCommands::Info { rgb } => {
-                let c = Color::new(rgb[0], rgb[1], rgb[2]);
-                println!("{}", reports::full_report(c));
+            ColorCommands::Info { color } => {
+
+                if let Some(rgb) = color.rgb {
+                    let c = Color::new(rgb[0], rgb[1], rgb[2]);
+                    println!("{}", reports::full_report(c));
+                }
+
+                if let Some(name) = color.name {
+                    let c = Color::new(0, 0, 0);
+                    println!("{}", reports::full_report(c));
+                }
+            
+                
             }
         },
 
